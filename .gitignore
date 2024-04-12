@@ -1,0 +1,21 @@
+﻿################################################################################
+# Данный GITIGNORE-файл был автоматически создан Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/.vsconfig
+/Assembly-CSharp.csproj
+/Assets
+/Boxophobic.SkyboxCubemapExtended.Editor.csproj
+/Boxophobic.Utils.Editor.csproj
+/Boxophobic.Utils.Scripts.csproj
+/HonestWarriors.sln
+/Library
+/Logs
+/Meryel.CodeAssist.Editor.csproj
+/obj
+/Packages
+/ProjectSettings
+/Temp
+/UIElementsSchema
+/UserSettings
