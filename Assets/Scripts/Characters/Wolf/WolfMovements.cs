@@ -3,164 +3,170 @@ using UnityEngine.AI;
 
 public class WolfMovements : MonoBehaviour
 {
-    private WolfCharacteristics wolfCharacteristics;
-    private NavMeshAgent wolfAgent;
-    private Animator wolfAnimator;
-    public AudioClip wolfHowl;
-    public AudioClip wolfAttack;
+    private WolfCharacteristics _wolfCharacteristics;
+    private NavMeshAgent _wolfAgent;
+    private Animator _wolfAnimator;
+    public AudioClip _wolfHowl;
+    public AudioClip _wolfAttack;
+    private AudioSource _wolfAudioSource;
 
-    private GameObject playerObject;
-    private PlayerCharacteristics playerCharacteristics;
+    private GameObject _playerObject;
+    private PlayerCharacteristics _playerCharacteristics;
 
-    public float walkSpeed = 2.5f;
-    public float runSpeed = 5f;
-    public bool isMoving = false;
-    public float changeSpeedDistance = 2.0f;
-    private float distanceToPlayer;
+    public float _walkSpeed = 2.5f;
+    public float _runSpeed = 5f;
+    public bool _isMoving = false;
+    public float _changeSpeedDistance = 2.0f;
+    private float _distanceToPlayer;
 
-    Vector3 walkPoint;
-    private bool walkPointSet = false;
-    public float walkPointRange = 15f;
+    private Vector3 _walkPoint;
+    private bool _walkPointSet = false;
+    public float _walkPointRange = 15f;
 
     [Header("Howl Logic")]
-    private float lastHowlTime;
-    private float howlTimer = 30f;
-    public bool isHowling = false;
+    private float _lastHowlTime;
+    private float _howlTimer = 30f;
+    public bool _isHowling = false;
 
 
     [Header("Enemy Detection / Attack Player")]
-    public float sightRange = 10f;
-    public float attackRange = 1.0f;
-    private float attackSoundDelay = 1.8f;
-    private float lastAttackSound = 0f;
+    public float _sightRange = 10f;
+    public float _attackRange = 1.1f;
+    public bool _isAttacking = false;
 
-    public bool playerInSightRange;
-    public bool playerInAttackRange;
-    public bool playerDead;
+    private bool _playerInSightRange;
+    private bool _playerInAttackRange;
 
     [Header("Player Layer")]
-    public LayerMask playerMask;
+    public LayerMask _playerMask;
 
     private void Awake()
     {
-        wolfAgent = GetComponent<NavMeshAgent>();
-        wolfCharacteristics = GetComponent<WolfCharacteristics>();
-        wolfAnimator = GetComponent<Animator>();
+        _wolfAgent = GetComponent<NavMeshAgent>();
+        _wolfCharacteristics = GetComponent<WolfCharacteristics>();
+        _wolfAnimator = GetComponent<Animator>();
+        _wolfAudioSource = GetComponent<AudioSource>();
     }
 
     private void Start()
     {
-        playerObject = GameObject.Find("Player");
-        playerCharacteristics = playerObject.GetComponent<PlayerCharacteristics>();
-        playerCharacteristics.onPlayerDead += Howl;
+        _playerObject = GameObject.Find("Player");
+        _playerCharacteristics = _playerObject.GetComponent<PlayerCharacteristics>();
+        _playerCharacteristics._onPlayerDead += Howl;
 
-        lastHowlTime = Time.time;
+        _lastHowlTime = Time.time;
     }
 
     private void FixedUpdate()
     {
-        isMoving = wolfAgent.velocity.magnitude > 2 ? true : false; 
+        _isMoving = _wolfAgent.velocity.magnitude > 2 ? true : false; 
 
-        distanceToPlayer = (transform.position - playerObject.transform.position).magnitude;
-        wolfAnimator.SetFloat("Speed", wolfAgent.velocity.magnitude);
-        wolfAnimator.SetBool("Howl", isHowling);
-        wolfAnimator.SetBool("isMoving", isMoving);
+        _distanceToPlayer = (transform.position - _playerObject.transform.position).magnitude;
+        _wolfAnimator.SetFloat("Speed", _wolfAgent.velocity.magnitude);
+        _wolfAnimator.SetBool("Howl", _isHowling);
+        _wolfAnimator.SetBool("isMoving", _isMoving);
 
-        if (!wolfCharacteristics.isDie && !playerCharacteristics.isDie)
+        if (!_wolfCharacteristics._isDie && !_playerCharacteristics._isDie)
         {
-            playerInSightRange = Physics.CheckSphere(transform.position, sightRange, playerMask);
-            playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, playerMask);
+            _playerInSightRange = Physics.CheckSphere(transform.position, _sightRange, _playerMask);
+            _playerInAttackRange = Physics.CheckSphere(transform.position, _attackRange, _playerMask);
         }
         
-        if (wolfCharacteristics.isDie || isHowling) wolfAgent.destination = transform.position;
+        if (_wolfCharacteristics._isDie || _isHowling) _wolfAgent.destination = transform.position;
 
-        if (Time.time - lastHowlTime >= howlTimer + 10f) lastHowlTime = Time.time;
+        if (Time.time - _lastHowlTime >= _howlTimer + 10f) _lastHowlTime = Time.time;
 
-        if(!wolfCharacteristics.isDie) WolfDecision();
+        if(!_wolfCharacteristics._isDie) WolfDecision();
     }
 
     private void WolfDecision()
     {
-        if (playerCharacteristics.isDie)
+        if (_playerCharacteristics._isDie)
         {
-            playerDead = playerCharacteristics.isDie;
-            playerInSightRange = false;
-            playerInAttackRange = false;
-            wolfAnimator.SetBool("playerDead", playerCharacteristics.isDie);
+            _playerInSightRange = false;
+            _playerInAttackRange = false;
+            _wolfAnimator.SetBool("playerDead", _playerCharacteristics._isDie);
         }
-        if (!playerInSightRange && !playerInAttackRange && Time.time - lastHowlTime >= howlTimer) Howl();
-        if (!playerInSightRange && !playerInAttackRange && !isHowling) Patrol();
-        if (playerInSightRange && !playerInAttackRange) Chase();
-        if (playerInSightRange && playerInAttackRange) Attack();
+        if (!_playerInSightRange && !_playerInAttackRange && Time.time - _lastHowlTime >= _howlTimer) Howl();
+        if (!_playerInSightRange && !_playerInAttackRange && !_isHowling) Patrol();
+        if (_playerInSightRange && !_playerInAttackRange) Chase();
+        if (_playerInSightRange && _playerInAttackRange) Attack();
     }
 
     private void SearchWalkPoint()
     {
-        float randomZ = Random.Range(-walkPointRange, walkPointRange);
-        float randomX = Random.Range(-walkPointRange, walkPointRange);
-
-        walkPoint = new Vector3(transform.position.x + randomX, transform.position.y, transform.position.z + randomZ);
-        if (NavMesh.SamplePosition(walkPoint, out NavMeshHit hit, 1f, NavMesh.AllAreas))
+        _isAttacking = false;
+        float randomZ = Random.Range(-_walkPointRange, _walkPointRange);
+        float randomX = Random.Range(-_walkPointRange, _walkPointRange);
+        _walkPoint = new Vector3(transform.position.x + randomX, transform.position.y, transform.position.z + randomZ);
+        if (NavMesh.SamplePosition(_walkPoint, out NavMeshHit hit, 1f, NavMesh.AllAreas))
         {
-            walkPointSet = true;
+            _walkPointSet = true;
         }
     }
 
     private void Patrol()
     {
-        wolfAgent.speed = walkSpeed;
-        if (!walkPointSet) SearchWalkPoint();
-        if (walkPointSet) wolfAgent.destination = walkPoint;
+        _wolfAgent.speed = _walkSpeed;
+        if (!_walkPointSet) SearchWalkPoint();
+        if (_walkPointSet) _wolfAgent.destination = _walkPoint;
 
-        Vector3 distanceToWalkPoint = transform.position - walkPoint;
-        if (distanceToWalkPoint.magnitude < 2f) walkPointSet = false;
-        if (walkPointSet && wolfAgent.velocity == Vector3.zero) walkPointSet = false;
+        Vector3 distanceToWalkPoint = transform.position - _walkPoint;
+        if (distanceToWalkPoint.magnitude < 2f) _walkPointSet = false;
+        if (_walkPointSet && _wolfAgent.velocity == Vector3.zero) _walkPointSet = false;
     }
 
     private void Chase()
     {
-        wolfAgent.speed = (distanceToPlayer > changeSpeedDistance) ? runSpeed : walkSpeed;
-        wolfAgent.destination = playerObject.transform.position;
-        if (wolfAgent.velocity == Vector3.zero) wolfAgent.transform.LookAt(playerObject.transform.position);
+        _isMoving = true;
+        if (_wolfAudioSource.clip == _wolfHowl) _wolfAudioSource.Stop();
+        if (_wolfAudioSource.clip == _wolfAttack)
+        {
+            float currentVolume = _wolfAudioSource.volume;
+            _wolfAudioSource.volume = Mathf.Lerp(currentVolume, 0, Time.deltaTime);
+        } 
+        _wolfAgent.speed = (_distanceToPlayer > _changeSpeedDistance) ? _runSpeed : _walkSpeed;
+        _wolfAgent.destination = _playerObject.transform.position;
+        if (_wolfAgent.velocity == Vector3.zero) _wolfAgent.transform.LookAt(_playerObject.transform.position);
     }
 
     private void Attack()
     {
-        if (distanceToPlayer <= attackRange)
+        if (_distanceToPlayer <= _attackRange)
         {
-            wolfAgent.destination = transform.position;
-            wolfAgent.transform.LookAt(playerObject.transform.position);
-            wolfAnimator.SetTrigger("Attack");
+            _wolfAgent.destination = transform.position;
+            _wolfAgent.transform.LookAt(_playerObject.transform.position);
+            _wolfAnimator.SetTrigger("Attack");
+            _isAttacking = true;
         }
-        else Chase();
+        else
+        {
+            Chase();
+            _isAttacking = false;
+        }
     }
 
     private void Howl()
     {
-        isHowling = true;
-        lastHowlTime = Time.time;
+        _isHowling = true;
+        _lastHowlTime = Time.time;
     }
 
     private void OnHowl(AnimationEvent animationEvent)
     {
-        AudioSource.PlayClipAtPoint(wolfHowl, transform.position);
+        _wolfAudioSource.clip = _wolfHowl;
+        _wolfAudioSource.Play();
     }
 
     private void OnHowlEnd(AnimationEvent animationEvent)
     {
-        isHowling = false;
+        _isHowling = false;
     }
 
     private void OnWolfAttackSound(AnimationEvent animationEvent)
     {
-        if(Time.time - lastAttackSound >= attackSoundDelay)
-        {
-            AudioSource.PlayClipAtPoint(wolfAttack, transform.position);
-        }
-    }
-
-    private void OnAttackEnd(AnimationEvent animationEvent)
-    {
-       lastAttackSound = Time.time;
+        _wolfAudioSource.clip = _wolfAttack;
+        _wolfAudioSource.volume = 0.3f;
+        _wolfAudioSource.Play();
     }
 }

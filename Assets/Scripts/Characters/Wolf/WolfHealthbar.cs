@@ -4,22 +4,22 @@ using UnityEngine.UI;
 
 public class WolfHealthbar : MonoBehaviour
 {
-    [SerializeField] private WolfCharacteristics wolfCharacteristics;
-    [SerializeField] private Image foregroundImage;
+    [SerializeField] private WolfCharacteristics _wolfCharacteristics;
+    [SerializeField] private Image _foregroundImage;
     private float updateSpeedSeconds = 0.5f;
 
     private void Start()
     {
-        foregroundImage = GameObject.Find("WolfHBForeground").GetComponent<Image>();
-        wolfCharacteristics = GetComponentInParent<WolfCharacteristics>();
-        wolfCharacteristics.onHealthDecrease += HandleHealthDecrease;
-        wolfCharacteristics.onHealthIncrease += HandleHealthIncrease;
+        _foregroundImage = GameObject.Find("WolfHBForeground").GetComponent<Image>();
+        _wolfCharacteristics = GetComponentInParent<WolfCharacteristics>();
+        _wolfCharacteristics.onHealthDecrease += HandleHealthDecrease;
+        _wolfCharacteristics.onHealthIncrease += HandleHealthIncrease;
     }
 
     private void Update()
     {
         transform.eulerAngles = Camera.main.transform.eulerAngles;
-        if(wolfCharacteristics.isDie) gameObject.SetActive(false);
+        if(_wolfCharacteristics._isDie) gameObject.SetActive(false);
     }
 
     private void HandleHealthDecrease(float percent)
@@ -32,28 +32,28 @@ public class WolfHealthbar : MonoBehaviour
     }
     private IEnumerator RechargeHp(float maxHealth)
     {
-        float preChangedHp = foregroundImage.fillAmount;
+        float preChangedHp = _foregroundImage.fillAmount;
         float elapsed = 0f;
         while (elapsed < updateSpeedSeconds)
         {
             elapsed += Time.deltaTime;
-            foregroundImage.fillAmount = Mathf.Lerp(preChangedHp, maxHealth, elapsed / updateSpeedSeconds);
+            _foregroundImage.fillAmount = Mathf.Lerp(preChangedHp, maxHealth, elapsed / updateSpeedSeconds);
             yield return null;
         }
-        foregroundImage.fillAmount = maxHealth;
+        _foregroundImage.fillAmount = maxHealth;
     }
     private IEnumerator ChangeToPercent(float percent)
     {
-        float preChangePercent = foregroundImage.fillAmount;
+        float preChangePercent = _foregroundImage.fillAmount;
         float targetPercent = percent;
         float elapsed = 0f;
         while (elapsed < updateSpeedSeconds)
         {
             elapsed += Time.deltaTime;
             float newFillAmount = Mathf.Lerp(preChangePercent, targetPercent, elapsed / updateSpeedSeconds);
-            foregroundImage.fillAmount = newFillAmount;
+            _foregroundImage.fillAmount = newFillAmount;
             yield return null;
         }
-        foregroundImage.fillAmount = targetPercent;
+        _foregroundImage.fillAmount = targetPercent;
     }
 }

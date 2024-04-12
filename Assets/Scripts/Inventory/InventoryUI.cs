@@ -2,22 +2,22 @@ using UnityEngine;
 
 public class InventoryUI : MonoBehaviour
 {
-    public Transform itemsParent;
-    public GameObject inventoryUI;
+    public Transform _itemsParent;
+    public GameObject _inventoryUI;
 
-    Inventory inventory;
+    Inventory _inventory;
 
-    InventorySlot[] slots;
+    InventorySlot[] _slots;
 
-    public bool isInventoryOpen = false;
+    public bool _isInventoryOpen = false;
 
     void Start()
     {
-        inventory = Inventory.instance;
-        inventory.onItemChangedCallback += UpdateUI;
-        slots = itemsParent.GetComponentsInChildren<InventorySlot>();
+        _inventory = Inventory.instance;
+        _inventory.onItemChangedCallback += UpdateUI;
+        _slots = _itemsParent.GetComponentsInChildren<InventorySlot>();
 
-        inventoryUI.SetActive(false);
+        _inventoryUI.SetActive(false);
     }
 
     void Update()
@@ -25,12 +25,12 @@ public class InventoryUI : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.I))
         {
             ToggleInventory();
-            if (isInventoryOpen)
+            if (_isInventoryOpen)
             {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
-            else if (!isInventoryOpen)
+            else if (!_isInventoryOpen)
             {
                 Cursor.lockState = CursorLockMode.Confined;
                 Cursor.visible = false;
@@ -40,21 +40,21 @@ public class InventoryUI : MonoBehaviour
 
     void ToggleInventory()
     {
-        isInventoryOpen = !isInventoryOpen;
-        inventoryUI.SetActive(isInventoryOpen);
+        _isInventoryOpen = !_isInventoryOpen;
+        _inventoryUI.SetActive(_isInventoryOpen);
     }
 
     void UpdateUI()
     {
-        for (int i = 0; i < slots.Length; i++)
+        for (int i = 0; i < _slots.Length; i++)
         {
-            if (i < inventory.items.Count)
+            if (i < _inventory._items.Count)
             {
-                slots[i].AddItem(inventory.items[i]);
+                _slots[i].AddItem(_inventory._items[i]);
             }
             else
             {
-                slots[i].ClearSlot();
+                _slots[i].ClearSlot();
             }
         }
     }

@@ -2,22 +2,22 @@
 
 public class CameraSound : MonoBehaviour
 {
-    private AudioSource cameraAudioSource;
-    public AudioClip environmentSound;
+    private AudioSource _cameraAudioSource;
+    public AudioClip _environmentSound;
 
     private void Awake()
     {
-        cameraAudioSource = GetComponent<AudioSource>();
-        cameraAudioSource.clip = environmentSound;
+        _cameraAudioSource = GetComponent<AudioSource>();
+        _cameraAudioSource.clip = _environmentSound;
     }
 
     private void Start()
     {
-        cameraAudioSource.Play();
+        _cameraAudioSource.Play();
     }
 
     private void OnDisable()
     {
-        cameraAudioSource.Stop();
+        _cameraAudioSource.Stop();
     }
 }

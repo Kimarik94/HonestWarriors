@@ -89,6 +89,24 @@ public partial class @HW_InputSystem: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Block"",
+                    ""type"": ""Button"",
+                    ""id"": ""947be717-79ec-483e-b51d-72fb15cbbbb8"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""EquipUnequipAxe"",
+                    ""type"": ""Button"",
+                    ""id"": ""11065169-c0c3-4577-954f-68cfffa2bbad"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -223,6 +241,28 @@ public partial class @HW_InputSystem: IInputActionCollection2, IDisposable
                     ""action"": ""Inventory"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""33e5d5b5-cdb3-4c0e-990b-c619623ba070"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Block"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""aaca3486-8ff9-4169-9de5-e9eec3a28816"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""EquipUnequipAxe"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -238,6 +278,8 @@ public partial class @HW_InputSystem: IInputActionCollection2, IDisposable
         m_Player_Zoom = m_Player.FindAction("Zoom", throwIfNotFound: true);
         m_Player_Interact = m_Player.FindAction("Interact", throwIfNotFound: true);
         m_Player_Inventory = m_Player.FindAction("Inventory", throwIfNotFound: true);
+        m_Player_Block = m_Player.FindAction("Block", throwIfNotFound: true);
+        m_Player_EquipUnequipAxe = m_Player.FindAction("EquipUnequipAxe", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -306,6 +348,8 @@ public partial class @HW_InputSystem: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Zoom;
     private readonly InputAction m_Player_Interact;
     private readonly InputAction m_Player_Inventory;
+    private readonly InputAction m_Player_Block;
+    private readonly InputAction m_Player_EquipUnequipAxe;
     public struct PlayerActions
     {
         private @HW_InputSystem m_Wrapper;
@@ -317,6 +361,8 @@ public partial class @HW_InputSystem: IInputActionCollection2, IDisposable
         public InputAction @Zoom => m_Wrapper.m_Player_Zoom;
         public InputAction @Interact => m_Wrapper.m_Player_Interact;
         public InputAction @Inventory => m_Wrapper.m_Player_Inventory;
+        public InputAction @Block => m_Wrapper.m_Player_Block;
+        public InputAction @EquipUnequipAxe => m_Wrapper.m_Player_EquipUnequipAxe;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -347,6 +393,12 @@ public partial class @HW_InputSystem: IInputActionCollection2, IDisposable
             @Inventory.started += instance.OnInventory;
             @Inventory.performed += instance.OnInventory;
             @Inventory.canceled += instance.OnInventory;
+            @Block.started += instance.OnBlock;
+            @Block.performed += instance.OnBlock;
+            @Block.canceled += instance.OnBlock;
+            @EquipUnequipAxe.started += instance.OnEquipUnequipAxe;
+            @EquipUnequipAxe.performed += instance.OnEquipUnequipAxe;
+            @EquipUnequipAxe.canceled += instance.OnEquipUnequipAxe;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -372,6 +424,12 @@ public partial class @HW_InputSystem: IInputActionCollection2, IDisposable
             @Inventory.started -= instance.OnInventory;
             @Inventory.performed -= instance.OnInventory;
             @Inventory.canceled -= instance.OnInventory;
+            @Block.started -= instance.OnBlock;
+            @Block.performed -= instance.OnBlock;
+            @Block.canceled -= instance.OnBlock;
+            @EquipUnequipAxe.started -= instance.OnEquipUnequipAxe;
+            @EquipUnequipAxe.performed -= instance.OnEquipUnequipAxe;
+            @EquipUnequipAxe.canceled -= instance.OnEquipUnequipAxe;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -398,5 +456,7 @@ public partial class @HW_InputSystem: IInputActionCollection2, IDisposable
         void OnZoom(InputAction.CallbackContext context);
         void OnInteract(InputAction.CallbackContext context);
         void OnInventory(InputAction.CallbackContext context);
+        void OnBlock(InputAction.CallbackContext context);
+        void OnEquipUnequipAxe(InputAction.CallbackContext context);
     }
 }

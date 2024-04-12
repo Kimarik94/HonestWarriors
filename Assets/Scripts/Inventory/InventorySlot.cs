@@ -3,48 +3,47 @@ using UnityEngine.UI;
 
 public class InventorySlot : MonoBehaviour
 {
+    public Image _icon;
+    public Button _removeButton; 
 
-    public Image icon;
-    public Button removeButton; 
-
-    Item item;
+    Item _item;
 
     private void Start()
     {
-        removeButton.image.color = new Color(0f, 0f , 0f, 0f);
+        _removeButton.image.color = new Color(0f, 0f , 0f, 0f);
     }
 
     public void AddItem(Item newItem)
     {
-        item = newItem;
+        _item = newItem;
 
-        icon.sprite = item.icon;
-        icon.enabled = true;
-        removeButton.interactable = true;
-        removeButton.image.color = new Color(255f, 255f, 255f, 255f);
+        _icon.sprite = _item._icon;
+        _icon.enabled = true;
+        _removeButton.interactable = true;
+        _removeButton.image.color = new Color(255f, 255f, 255f, 255f);
 
     }
 
     public void ClearSlot()
     {
-        item = null;
+        _item = null;
 
-        icon.sprite = null;
-        icon.enabled = false;
-        removeButton.interactable = false;
-        removeButton.image.color = new Color(0f, 0f, 0f, 0f);
+        _icon.sprite = null;
+        _icon.enabled = false;
+        _removeButton.interactable = false;
+        _removeButton.image.color = new Color(0f, 0f, 0f, 0f);
     }
 
     public void OnRemoveButton()
     {
-        Inventory.instance.Remove(item);
+        Inventory.instance.Remove(_item);
     }
 
     public void UseItem()
     {
-        if (item != null)
+        if (_item != null)
         {
-            item.Use();
+            _item.Use();
         }
     }
 }

@@ -3,41 +3,51 @@ using UnityEngine;
 
 public class PlayerCharacteristics : MonoBehaviour
 {
-    public event Action onPlayerDead;
+    public event Action _onPlayerDead;
     public event Action<float> onHealthDecrease = delegate { };
     public event Action<float> onHealthIncrease = delegate { };
 
-    private CharacterController playerController;
-    private Animator playerAnimator;
+    private CharacterController _playerController;
+    private PlayerInputHandler _playerInputHandler;
+    private Animator _playerAnimator;
+    public Transform _interactionPoint;
 
-    [SerializeField] private float currentHealth;
-    private float maxHealth = 100.0f;
-    private float damage = 15f;
-    private float passiveHealPerSecond = 0.01f;
-    private float lastDamageTime = 0f;
-    private float regenerationDelay = 5f;
-    private float damageInterval = 1.8f;
+    public AudioClip _damageTakeSound;
+    public AudioClip _blockSound;
+    public AudioClip _deathSound;
 
-    private bool canDamage;
-    public bool isDie = false;
+    private float _currentHealth;
+    private float _maxHealth = 100.0f;
+    private float _damage = 15f;
+    private float _passiveHealPerSecond = 0.01f;
+    private float _lastDamageTime = 0f;
+    private float _regenerationDelay = 5f;
+    private float _damageInterval = 1.25f;
 
-    [Header("Enemies Damage Control")]
-    private Collider[] enemyDamageColliders = new Collider[3];
-    public Transform interactionPoint;
-    [SerializeField] private LayerMask enemyLayer;
-    [SerializeField] private float interactionRadius = 5f;
-    [SerializeField] private int collidersNumFound;
+    //Enemy
+    private Collider[] _enemyDamageColliders = new Collider[3];
+    [SerializeField] private LayerMask _enemyLayer;
+    [SerializeField] private float _interactionRadius = 5f;
+    [SerializeField] private int _collidersNumFound;
+    [SerializeField] private float detectionAngle = 90f;
+
+    private WolfAnimEvents _wolfAnimEvents;
+
+    //Healths stats
+    private bool _canDamage;
+    public bool _isDie = false;
 
     private void Start()
     {
-        playerController = GetComponent<CharacterController>();
-        playerAnimator = GetComponent<Animator>();
-        currentHealth = maxHealth;
-        interactionPoint = transform;
+        _playerController = GetComponent<CharacterController>();
+        _playerAnimator = GetComponent<Animator>();
+        _playerInputHandler = GetComponent<PlayerInputHandler>();
+        _currentHealth = _maxHealth;
+        _interactionPoint = transform;
     }
     private void Update()
     {
-        if (!isDie)
+        if (!_isDie)
         {
             RegenerationHP();
             CalculateEnemiesDamage();
@@ -47,61 +57,81 @@ public class PlayerCharacteristics : MonoBehaviour
 
     private void CalculateEnemiesDamage()
     {
-        collidersNumFound = Physics.OverlapSphereNonAlloc(interactionPoint.position, interactionRadius, enemyDamageColliders, enemyLayer);
-        if (collidersNumFound > 0)
+        _collidersNumFound = Physics.OverlapSphereNonAlloc(_interactionPoint.position, _interactionRadius, _enemyDamageColliders, _enemyLayer);
+        if (_collidersNumFound > 0)
         {
-            if (!enemyDamageColliders[0].GetComponentInParent<WolfCharacteristics>().isDie
-                && Time.time - lastDamageTime >= damageInterval) canDamage = true;
+            if (!_enemyDamageColliders[0].GetComponentInParent<WolfCharacteristics>()._isDie
+                && Time.time - _lastDamageTime >= _damageInterval)
+            {
+                _wolfAnimEvents = _enemyDamageColliders[0].GetComponentInParent<WolfAnimEvents>();
+                Vector3 directionToPlayer = _enemyDamageColliders[0].GetComponentInParent<Transform>().position - transform.position;
+                directionToPlayer.Normalize();
+
+                Vector3 forward = transform.forward;
+
+                if (!(Vector3.Dot(forward, directionToPlayer) > Mathf.Cos(detectionAngle * 0.5f * Mathf.Deg2Rad))
+                    && !_playerInputHandler._isBlocking)
+                {
+                    _canDamage = true;
+                }
+                else if (!(Vector3.Dot(forward, directionToPlayer) > Mathf.Cos(detectionAngle * 0.5f * Mathf.Deg2Rad))
+                    && _playerInputHandler._isBlocking)
+                {
+                    if (_wolfAnimEvents.attackTouch)
+                    {
+                        AudioSource.PlayClipAtPoint(_blockSound, transform.position);
+                        _wolfAnimEvents.attackTouch = false;
+                    }
+                }
+            }
         }
-        else canDamage = false;
+        else _canDamage = false;
     }
 
     public void DecreaseHP(float amount)
     {
-        currentHealth -= amount;
-        lastDamageTime = Time.time;
-        float currentHealthPercent = currentHealth / maxHealth;
+        _currentHealth -= amount;
+        _lastDamageTime = Time.time;
+        float currentHealthPercent = _currentHealth / _maxHealth;
         onHealthDecrease(currentHealthPercent);
     }
 
     public void IncreaseHP(float passiveHealPerSecond)
     {
-        currentHealth += passiveHealPerSecond;
-        onHealthIncrease(currentHealth / maxHealth);
-        if (currentHealth > maxHealth) currentHealth = maxHealth;
+        _currentHealth += passiveHealPerSecond;
+        onHealthIncrease(_currentHealth / _maxHealth);
+        if (_currentHealth > _maxHealth) _currentHealth = _maxHealth;
     }
 
     private void RegenerationHP()
     {
-        if ((Time.time - lastDamageTime >= regenerationDelay) && currentHealth <= maxHealth && !canDamage)
+        if ((Time.time - _lastDamageTime >= _regenerationDelay) && _currentHealth <= _maxHealth && !_canDamage)
         {
-            IncreaseHP(passiveHealPerSecond);
+            IncreaseHP(_passiveHealPerSecond);
         }
     }
 
     private void TakeDamage()
     {
-        if (currentHealth <= 0)
+        if (_currentHealth <= 0)
         {
-            isDie = true;
-            playerAnimator.SetBool("isDie", isDie);
-            onPlayerDead.Invoke();
-            canDamage = false;
+            _isDie = true;
+            AudioSource.PlayClipAtPoint(_deathSound,transform.position);
+            _playerAnimator.SetBool("isDie", _isDie);
+            _onPlayerDead.Invoke();
+            _canDamage = false;
         }
-        if (canDamage)
+        if (_canDamage)
         {
-            if (playerController.bounds.Intersects(GameObject.FindWithTag("EnemyDamageCollider").GetComponent<Collider>().bounds))
+            if(_wolfAnimEvents != null && _wolfAnimEvents.attackTouch &&
+                _playerController.bounds.Intersects(GameObject.FindWithTag("EnemyDamageCollider").GetComponent<Collider>().bounds))
             {
-                DecreaseHP(damage);
-                canDamage = false;
-                lastDamageTime = Time.time;
+                _wolfAnimEvents.attackTouch = false;
+                AudioSource.PlayClipAtPoint(_damageTakeSound, transform.position);
+                DecreaseHP(_damage);
+                _canDamage = false;
+                _lastDamageTime = Time.time;
             }
         }
-    }
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(interactionPoint.position, interactionRadius);
     }
 }

@@ -3,109 +3,98 @@ using UnityEngine;
 
 public class WolfCharacteristics : MonoBehaviour
 {
-    private Collider wolfCollider;
-    private Animator wolfAnimator;
-    public AudioClip wolfDie;
-    public AudioClip wolfAxeHit;
-    private ThirdPersonController playerController;
-    private PlayerCharacteristics playerCharacteristics;
+    private Animator _wolfAnimator;
+    private Collider _wolfCollider;
+    public AudioClip _wolfDie;
+    public AudioClip _wolfAxeHit;
+
+
+    private PlayerDetectionObject _detection;
 
     public event Action<float> onHealthDecrease = delegate { };
     public event Action<float> onHealthIncrease = delegate { };
 
-    [SerializeField] private float maxHealth = 100f;
-    [SerializeField] private float currentHealth;
-    [SerializeField] private float damage = 25f;
+    [SerializeField] private float _maxHealth = 100f;
+    [SerializeField] private float _currentHealth;
+    [SerializeField] private float _damage = 25f;
 
-    private float lastDamageTime = 0f;
-    private float takeDamageInterval = 0.70f;
+    private float _lastDamageTime = 0f;
 
-    private float rechargeHitpointsTimer = 15f;
+    private float _rechargeHitpointsTimer = 15f;
 
-    [SerializeField] private bool canDamage = true;
-    public bool isDie = false;
-    private bool isDestroyed = false;
-    [SerializeField] private float destroyTimer = 60f;
+    public bool _isDie = false;
+    private bool _isDestroyed = false;
+    [SerializeField] private float _destroyTimer = 10f;
 
     private void Start()
     {
-        wolfAnimator = GetComponent<Animator>();
-        wolfCollider = GetComponent<Collider>();
-        playerController = GameObject.Find("Player").GetComponent<ThirdPersonController>();
-        playerCharacteristics = GameObject.Find("Player").GetComponent<PlayerCharacteristics>();
-        currentHealth = maxHealth;
+        _wolfAnimator = GetComponent<Animator>();
+        _wolfCollider = GetComponent<Collider>();
+        _detection = GetComponentInChildren<PlayerDetectionObject>();
+        _currentHealth = _maxHealth;
     }
     private void Update()
     {
-        if (!isDie && Time.time - lastDamageTime >= takeDamageInterval)
+        if (!_isDie && Time.time - _lastDamageTime >= _rechargeHitpointsTimer)
         {
-            canDamage = true;
-            TakeDamage();
-        }
-
-        if (!isDie && Time.time - lastDamageTime >= rechargeHitpointsTimer)
-        {
-            canDamage = true;
             RechargeHitPoints();
         }
 
-        if(isDie && !isDestroyed && Time.time - lastDamageTime >= destroyTimer)
+        if (_isDie)
         {
-            isDestroyed = true;
+            _wolfCollider.isTrigger = true;
+        }
+
+        if(_isDie && !_isDestroyed && Time.time - _lastDamageTime >= _destroyTimer)
+        {
+            _isDestroyed = true;
             Destroy(gameObject);
         }
     }
     public void DecreaseHP(float amount)
     {
-        currentHealth -= amount;
-        lastDamageTime = Time.time;
-        float currentHealthPercent = currentHealth / maxHealth;
+        _currentHealth -= amount;
+        _lastDamageTime = Time.time;
+        float currentHealthPercent = _currentHealth / _maxHealth;
         onHealthDecrease(currentHealthPercent);
 
-        if (currentHealth == 0) WolfDie();
+        if (_currentHealth == 0) WolfDie();
     }
 
     public void IncreaseHP(float maxHealth)
     {
-        currentHealth = maxHealth;
-        onHealthIncrease(currentHealth / maxHealth);
-        if (currentHealth > maxHealth) currentHealth = maxHealth;
+        _currentHealth = maxHealth;
+        onHealthIncrease(_currentHealth / maxHealth);
+        if (_currentHealth > maxHealth) _currentHealth = maxHealth;
     }
 
-    private void TakeDamage()
+    public void TakeDamage()
     {
-        if (!playerCharacteristics.isDie)
+        if(_detection != null && _detection._playerInInteractionArea && _detection._aimRay._iteractableObjectInFocus && !_isDie)
         {
-            if (wolfCollider.bounds.Intersects(GameObject.Find("Axe").GetComponent<Collider>().bounds))
-            {
-                if (canDamage && playerController.isAttacking)
-                {
-                    AudioSource.PlayClipAtPoint(wolfAxeHit,transform.position);
-                    DecreaseHP(damage);
-                    canDamage = false;
-                    lastDamageTime = Time.time;
-                }
-            }
+            AudioSource.PlayClipAtPoint(_wolfAxeHit, transform.position);
+            DecreaseHP(_damage);
+            _lastDamageTime = Time.time;
         }
     }
 
     private void RechargeHitPoints()
     {
-        if (Time.time - lastDamageTime >= rechargeHitpointsTimer)
+        if (Time.time - _lastDamageTime >= _rechargeHitpointsTimer)
         {
-            IncreaseHP(maxHealth);
+            IncreaseHP(_maxHealth);
         }
     }
 
     private void WolfDie() 
     {
-        isDie = true;
-        wolfAnimator.SetBool("isDie", isDie);
-        lastDamageTime = Time.time;
+        _isDie = true;
+        _wolfAnimator.SetBool("isDie", _isDie);
+        _lastDamageTime = Time.time;
     }
 
     private void OnWolfDie(AnimationEvent animationEvent)
     {
-        AudioSource.PlayClipAtPoint(wolfDie, transform.position);
+        AudioSource.PlayClipAtPoint(_wolfDie, transform.position);
     }
 }
