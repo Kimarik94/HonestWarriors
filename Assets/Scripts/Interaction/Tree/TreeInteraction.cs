@@ -4,6 +4,7 @@ public class TreeInteraction : MonoBehaviour
 {
     private Collider _treeCollider;
     private PlayerDetectionObject _detection;
+    [SerializeField] private GameObject _particleAura;
 
     private Animation _treeAnimation;
 
@@ -28,9 +29,19 @@ public class TreeInteraction : MonoBehaviour
 
     private void Start()
     {
+        _particleAura.SetActive(true);
         _detection = GetComponentInChildren<PlayerDetectionObject>();
         _treeCollider = GetComponent<Collider>();
         _treeAnimation = GetComponent<Animation>();
+    }
+
+    private void Update()
+    {
+        if (_detection != null && _detection._playerInInteractionArea)
+        {
+            _particleAura.SetActive(false);
+        }
+        if(_detection != null && !_detection._playerInInteractionArea) _particleAura.SetActive(true);
     }
 
     private void FixedUpdate()
@@ -46,7 +57,7 @@ public class TreeInteraction : MonoBehaviour
     {
         Vector2 randomOffset = Random.insideUnitCircle * _treeSpawnRadius;
         Vector3 spawnPosition = transform.position + new Vector3(randomOffset.x, 0.0f, randomOffset.y);
-        spawnPosition.y = 0.25f;
+        spawnPosition.y = 0.5f;
 
         if ((spawnPosition - _detection._player.transform.position).magnitude > 3f)
         {

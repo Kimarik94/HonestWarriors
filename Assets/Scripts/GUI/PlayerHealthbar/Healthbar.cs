@@ -11,7 +11,7 @@ public class Healthbar : MonoBehaviour
     void Start()
     {
         _foregroundImage = GameObject.FindWithTag("HealthbarImage").GetComponent<Image>();
-        _playerCharacteristics = GameObject.Find("Player").GetComponent<PlayerCharacteristics>();
+        _playerCharacteristics = GameObject.Find("Player(Clone)").GetComponent<PlayerCharacteristics>();
         _playerCharacteristics.onHealthDecrease += HandleHealthDecrease;
         _playerCharacteristics.onHealthIncrease += HandleHealthIncrease;
     }
@@ -23,6 +23,17 @@ public class Healthbar : MonoBehaviour
     private void HandleHealthIncrease(float hpPerSecond)
     {
         StartCoroutine(Regeneration(hpPerSecond));
+    }
+
+    private void OnDestroy()
+    {
+        if (_playerCharacteristics != null)
+        {
+            _playerCharacteristics.onHealthDecrease -= HandleHealthDecrease;
+            _playerCharacteristics.onHealthIncrease -= HandleHealthIncrease;
+        }    
+
+        StopAllCoroutines();
     }
 
     private IEnumerator Regeneration(float passiveHealPerSecond)

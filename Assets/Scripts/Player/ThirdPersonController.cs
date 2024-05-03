@@ -1,16 +1,14 @@
-using Cinemachine;
 using UnityEngine;
-using UnityEngine.InputSystem.XR;
-
-public class ThirdPersonController : MonoBehaviour
+public class ThirdPersonController : MonoBehaviour, IPlayerController
 {
     // Player Components
     private GameObject _mainCamera;
     private CharacterController _playerController;
     private PlayerInputHandler _playerInputHandler;
     private PlayerCharacteristics _playerCharacteristics;
+    private PlayerBattleActions _playerBattleActions;
     private Animator _playerAnimator;
-    private InventoryUI _inventoryUI;
+    private Inventory _inventory;
 
     // Player
     private float _playerSpeed;
@@ -46,17 +44,22 @@ public class ThirdPersonController : MonoBehaviour
     public GameObject _currentInteractableObject;
     public Interactable _focus;
 
-    private void Awake()
+    private void Start()
     {
-        if (_mainCamera == null) _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
-        _inventoryUI = GameObject.Find("GUI").GetComponent<InventoryUI>();
+        Initialize();
+        // Initialize components
+        _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
         _playerAnimator = GetComponent<Animator>();
         _playerController = GetComponent<CharacterController>();
         _playerCharacteristics = GetComponent<PlayerCharacteristics>();
+        _playerBattleActions = GetComponent<PlayerBattleActions>();
         _playerInputHandler = GetComponent<PlayerInputHandler>();
+
+        // Try to get the inventory component
+        GameObject.Find("GUI").TryGetComponent(out _inventory);
     }
 
-    private void Start()
+    public void Initialize()
     {
         AssignAnimationIDs();
     }
@@ -65,23 +68,17 @@ public class ThirdPersonController : MonoBehaviour
     {
         if (!Gamebahaivour._isPaused)
         {
-            if (!_isInteraction && !_playerCharacteristics._isDie && !_inventoryUI._isInventoryOpen)
+            if (!_isInteraction && !_playerCharacteristics._isDie && !_inventory._isInventoryOpen)
             {
                 AdjustHeight();
-                Block();
-                if (_playerInputHandler._isBlocking) _isAttacking = false;
 
-                if (!_playerInputHandler._isBlocking)
+                if (!_playerInputHandler._isBlocking && !_playerBattleActions._skillActive)
                 {
-                    Attack();
                     Move();
                     InteractWith();
                 }
             }
-            if (_inventoryUI._isInventoryOpen)
-            {
-                _playerAnimator.SetFloat("Speed", 0);
-            }
+            if (_inventory._isInventoryOpen) _playerAnimator.SetFloat("Speed", 0);
         }
     }
 
@@ -144,18 +141,6 @@ public class ThirdPersonController : MonoBehaviour
         _playerAnimator.SetFloat(_animMotionSpeed, inputMagnitude);
     }
 
-    private void Attack()
-    {
-        _playerAnimator.SetBool("Attack", _playerInputHandler._AttackPressed);
-        Cursor.lockState = CursorLockMode.Confined;
-        Cursor.visible = false;
-    }
-
-    private void Block()
-    {
-        _playerAnimator.SetBool("Block", _playerInputHandler._BlockPressed);
-    }
-
     private void InteractWith()
     {
         _collidersNumFound = Physics.OverlapSphereNonAlloc(transform.position, _interactionRadius, _interactableObjectsColliders, _interactableLayer);
@@ -208,16 +193,6 @@ public class ThirdPersonController : MonoBehaviour
                 AudioSource.PlayClipAtPoint(_footstepAudioClips[index], transform.TransformPoint(_playerController.center), _footstepAudioVolume);
             }
         }
-    }
-
-    private void OnAttackStart(AnimationEvent animationEvent)
-    {
-        _isAttacking = true;
-    }
-
-    private void OnAttackEnd(AnimationEvent animationEvent)
-    {
-        _isAttacking = false;
     }
     
     private void OnDrawGizmos()

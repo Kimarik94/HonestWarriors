@@ -3,6 +3,8 @@ using UnityEngine.InputSystem;
 
 public class PlayerInputHandler : MonoBehaviour
 {
+    private PlayerBattleActions _playerBattleActions;
+
     [Header("Input Action Asset")]
     [SerializeField] private InputActionAsset _playerControls;
 
@@ -48,6 +50,7 @@ public class PlayerInputHandler : MonoBehaviour
     {
         if (Instance == null)
         {
+           
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
@@ -55,7 +58,7 @@ public class PlayerInputHandler : MonoBehaviour
         {
             Instance = null;
         }
-
+        _playerBattleActions = GetComponent<PlayerBattleActions>();
         _moveAction = _playerControls.FindActionMap(_actionMapName).FindAction(_move);
         _sprintAction = _playerControls.FindActionMap(_actionMapName).FindAction(_sprint);
         _blockAction = _playerControls.FindActionMap(_actionMapName).FindAction(_block);
@@ -78,8 +81,11 @@ public class PlayerInputHandler : MonoBehaviour
 
         _blockAction.performed += context =>
         {
-            _BlockPressed = true;
-            _isBlocking = true;
+            if (!_playerBattleActions._skillActive)
+            {
+                _BlockPressed = true;
+                _isBlocking = true;
+            }
         };
         _blockAction.canceled += context =>
         {

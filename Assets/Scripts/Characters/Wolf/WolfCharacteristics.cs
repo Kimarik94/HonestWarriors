@@ -7,7 +7,7 @@ public class WolfCharacteristics : MonoBehaviour
     private Collider _wolfCollider;
     public AudioClip _wolfDie;
     public AudioClip _wolfAxeHit;
-
+    public AudioClip _wolfKickDamage;
 
     private PlayerDetectionObject _detection;
 
@@ -16,7 +16,6 @@ public class WolfCharacteristics : MonoBehaviour
 
     [SerializeField] private float _maxHealth = 100f;
     [SerializeField] private float _currentHealth;
-    [SerializeField] private float _damage = 25f;
 
     private float _lastDamageTime = 0f;
 
@@ -58,7 +57,7 @@ public class WolfCharacteristics : MonoBehaviour
         float currentHealthPercent = _currentHealth / _maxHealth;
         onHealthDecrease(currentHealthPercent);
 
-        if (_currentHealth == 0) WolfDie();
+        if (_currentHealth <= 0) WolfDie();
     }
 
     public void IncreaseHP(float maxHealth)
@@ -68,12 +67,14 @@ public class WolfCharacteristics : MonoBehaviour
         if (_currentHealth > maxHealth) _currentHealth = maxHealth;
     }
 
-    public void TakeDamage()
+    public void TakeDamage(string skillNumber)
     {
         if(_detection != null && _detection._playerInInteractionArea && _detection._aimRay._iteractableObjectInFocus && !_isDie)
         {
-            AudioSource.PlayClipAtPoint(_wolfAxeHit, transform.position);
-            DecreaseHP(_damage);
+            if(skillNumber == "Alpha2") AudioSource.PlayClipAtPoint(_wolfKickDamage, transform.position);
+            else AudioSource.PlayClipAtPoint(_wolfAxeHit, transform.position);
+            
+            DecreaseHP(_detection._playerCharacteristics._dealDamage);
             _lastDamageTime = Time.time;
         }
     }

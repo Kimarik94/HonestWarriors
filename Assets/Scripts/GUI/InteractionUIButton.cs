@@ -8,7 +8,7 @@ public class InteractionUIButton : MonoBehaviour
     private void Start()
     {
         _animator = GetComponent<Animator>();
-        _playerController = GameObject.Find("Player").GetComponent<ThirdPersonController>();
+        _playerController = GameObject.Find("Player(Clone)").GetComponent<ThirdPersonController>();
     }
 
     private void Update()

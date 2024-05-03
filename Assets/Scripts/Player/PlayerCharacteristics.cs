@@ -18,7 +18,8 @@ public class PlayerCharacteristics : MonoBehaviour
 
     private float _currentHealth;
     private float _maxHealth = 100.0f;
-    private float _damage = 15f;
+    public float _takeDamage = 10f;
+    public float _dealDamage = 20f;
     private float _passiveHealPerSecond = 0.01f;
     private float _lastDamageTime = 0f;
     private float _regenerationDelay = 5f;
@@ -44,6 +45,8 @@ public class PlayerCharacteristics : MonoBehaviour
         _playerInputHandler = GetComponent<PlayerInputHandler>();
         _currentHealth = _maxHealth;
         _interactionPoint = transform;
+
+        _enemyLayer = LayerMask.GetMask("EnemyDamageCollider");
     }
     private void Update()
     {
@@ -116,19 +119,19 @@ public class PlayerCharacteristics : MonoBehaviour
         if (_currentHealth <= 0)
         {
             _isDie = true;
-            AudioSource.PlayClipAtPoint(_deathSound,transform.position);
+            AudioSource.PlayClipAtPoint(_deathSound, transform.position);
             _playerAnimator.SetBool("isDie", _isDie);
             _onPlayerDead.Invoke();
             _canDamage = false;
         }
         if (_canDamage)
         {
-            if(_wolfAnimEvents != null && _wolfAnimEvents.attackTouch &&
+            if (_wolfAnimEvents != null && _wolfAnimEvents.attackTouch &&
                 _playerController.bounds.Intersects(GameObject.FindWithTag("EnemyDamageCollider").GetComponent<Collider>().bounds))
             {
                 _wolfAnimEvents.attackTouch = false;
                 AudioSource.PlayClipAtPoint(_damageTakeSound, transform.position);
-                DecreaseHP(_damage);
+                DecreaseHP(_takeDamage);
                 _canDamage = false;
                 _lastDamageTime = Time.time;
             }

@@ -50,7 +50,7 @@ public class WolfMovements : MonoBehaviour
 
     private void Start()
     {
-        _playerObject = GameObject.Find("Player");
+        _playerObject = GameObject.Find("Player(Clone)");
         _playerCharacteristics = _playerObject.GetComponent<PlayerCharacteristics>();
         _playerCharacteristics._onPlayerDead += Howl;
 

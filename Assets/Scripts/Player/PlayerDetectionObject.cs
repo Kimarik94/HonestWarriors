@@ -8,6 +8,7 @@ public class PlayerDetectionObject : MonoBehaviour
     public GameObject _player;
     public PlayerInputHandler _playerInputHandler;
     public PlayerWeaponsEquip _playerWeaponsEquip;
+    public PlayerCharacteristics _playerCharacteristics;
     public Collider _axe;
     public PlayerAimRay _aimRay;
     public PlayerAnimEvents _playerAnimEvents;
@@ -23,9 +24,10 @@ public class PlayerDetectionObject : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             _playerInInteractionArea = true;
-            _player = GameObject.Find("Player");
+            _player = GameObject.Find("Player(Clone)");
             _playerInputHandler = _player.GetComponent<PlayerInputHandler>();
             _playerWeaponsEquip = _player.GetComponent<PlayerWeaponsEquip>();
+            _playerCharacteristics = _player.GetComponent<PlayerCharacteristics>();
             try
             {
                 _axe = GameObject.Find("Axe").GetComponent<Collider>();
@@ -46,9 +48,10 @@ public class PlayerDetectionObject : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            _playerInInteractionArea = true;
+            _playerInInteractionArea = false;
             _playerInputHandler = null;
             _playerWeaponsEquip = null;
+            _playerCharacteristics = null;
             _player = null;
             _axe = null;
             _aimRay = null;

@@ -1,4 +1,5 @@
 using Cinemachine;
+using System;
 using UnityEngine;
 
 public class CMCollisionHandler : MonoBehaviour
@@ -12,7 +13,7 @@ public class CMCollisionHandler : MonoBehaviour
 
     private Cinemachine3rdPersonFollow _followComponent;
     private PlayerInputHandler _playerInputHandler;
-    private InventoryUI _inventoryUI;
+    private Inventory _inventory;
 
     // Cinemachine
     [Header("Cinemachine")]
@@ -36,31 +37,36 @@ public class CMCollisionHandler : MonoBehaviour
     //Cinemachine Collision Handling
     private bool _isColliding;
 
-    private void Awake()
+    private void Start()
     {
-        _inventoryUI = GameObject.Find("GUI").GetComponent<InventoryUI>();
+        _cameraFollowTarget = GameObject.Find("CinemachineFollowTarget").transform;
+        _cinemachineCameraTarget = GameObject.Find("CinemachineFollowTarget");
+        _followComponent = _cinemachineCamera.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
+
+        _inventory = GameObject.Find("GUI").GetComponent<Inventory>();
         _cinemachineTargetYaw = _cinemachineCameraTarget.transform.rotation.eulerAngles.y;
         _cinemachineCamera = GameObject.Find("PlayerFollowCamera").GetComponent<CinemachineVirtualCamera>();
         _cinemachineCamera.GetCinemachineComponent<Cinemachine3rdPersonFollow>().CameraDistance = 5f;
-        _playerInputHandler = GameObject.Find("Player").GetComponent<PlayerInputHandler>();
+        _playerInputHandler = GameObject.Find("Player(Clone)").GetComponent<PlayerInputHandler>();
     }
 
-    private void Start()
-    {
-        _followComponent = _cinemachineCamera.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
-    }
-
-    private void LateUpdate()
+    private void Update()
     {
         if (!Gamebahaivour._isPaused)
         {
-            if (!_inventoryUI._isInventoryOpen)
+            if (!_inventory._isInventoryOpen)
             {
+                CameraMovement();
                 CameraRotation();
                 HandleCameraCollision();
                 if(!_isColliding) CameraZooming();
             }
         }
+    }
+
+    private void CameraMovement()
+    {
+        _cinemachineCamera.m_Follow = _cameraFollowTarget;
     }
 
     private void HandleCameraCollision()
